@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { type Key } from '../hooks/useKeypress.js';
 import { type IdeIntegrationNudgeResult } from '../IdeIntegrationNudge.js';
 import { type FolderTrustChoice } from '../components/FolderTrustDialog.js';
@@ -75,6 +75,7 @@ export interface UIActions {
   setAuthContext: (context: { requiresRestart?: boolean }) => void;
   handleRestart: () => void;
   handleNewAgentsSelect: (choice: NewAgentsChoice) => Promise<void>;
+  setCustomDialog: (dialog: ReactNode | null) => void;
 }
 
 export const UIActionsContext = createContext<UIActions | null>(null);

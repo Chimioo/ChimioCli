@@ -37,9 +37,11 @@ import {
   HookCallEvent,
 } from '../types.js';
 import { AgentTerminateMode } from '../../agents/types.js';
-import { GIT_COMMIT_INFO, CLI_VERSION } from '../../generated/git-commit.js';
 import { UserAccountManager } from '../../utils/userAccountManager.js';
 import { InstallationManager } from '../../utils/installationManager.js';
+
+const CLI_VERSION = process.env['GEMINI_CLI_VERSION'] || 'dev';
+const GIT_COMMIT_INFO = process.env['GEMINI_CLI_GIT_COMMIT'] || 'unknown';
 
 import si from 'systeminformation';
 import type { Systeminformation } from 'systeminformation';

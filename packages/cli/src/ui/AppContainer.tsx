@@ -50,6 +50,8 @@ import {
   recordExitFail,
   ShellExecutionService,
   saveApiKey,
+  saveDeepSeekApiKey,
+  saveOpenAICompatApiKey,
   debugLogger,
   coreEvents,
   CoreEvent,
@@ -718,7 +720,14 @@ Logging in with Google... Restarting Gemini CLI to continue.
           return;
         }
 
-        await saveApiKey(apiKey);
+        const provider = (process.env['GEMINI_CLI_PROVIDER'] || '').toLowerCase();
+        if (provider === 'deepseek') {
+          await saveDeepSeekApiKey(apiKey);
+        } else if (provider === 'openai_compatible') {
+          await saveOpenAICompatApiKey(apiKey);
+        } else {
+          await saveApiKey(apiKey);
+        }
         await reloadApiKey();
         await config.refreshAuth(AuthType.USE_GEMINI);
         setAuthState(AuthState.Authenticated);
@@ -835,6 +844,7 @@ Logging in with Google... Restarting Gemini CLI to continue.
         }
       },
       setText: stableSetText,
+      setCustomDialog,
     }),
     [
       setAuthState,
@@ -853,6 +863,7 @@ Logging in with Google... Restarting Gemini CLI to continue.
       addConfirmUpdateExtensionRequest,
       toggleDebugProfiler,
       stableSetText,
+      setCustomDialog,
     ],
   );
 
@@ -1002,7 +1013,15 @@ Logging in with Google... Restarting Gemini CLI to continue.
     handleSlashCommand,
     shellModeActive,
     getPreferredEditor,
-    onAuthError,
+    (error: string) => {
+      onAuthError(error);
+      const provider = (process.env['GEMINI_CLI_PROVIDER'] || '').toLowerCase();
+      const shouldPromptForKey =
+        provider === 'deepseek' || provider === 'gemini' || provider === 'openai_compatible';
+      if (shouldPromptForKey) {
+        setAuthState(AuthState.AwaitingApiKeyInput);
+      }
+    },
     performMemoryRefresh,
     modelSwitchedFromQuotaError,
     setModelSwitchedFromQuotaError,
@@ -2103,6 +2122,7 @@ Logging in with Google... Restarting Gemini CLI to continue.
       setActiveBackgroundShellPid,
       setIsBackgroundShellListOpen,
       setAuthContext,
+      setCustomDialog,
       handleRestart: async () => {
         if (process.send) {
           const remoteSettings = config.getRemoteAdminSettings();
@@ -2179,6 +2199,7 @@ Logging in with Google... Restarting Gemini CLI to continue.
       setActiveBackgroundShellPid,
       setIsBackgroundShellListOpen,
       setAuthContext,
+      setCustomDialog,
       newAgents,
       config,
       historyManager,

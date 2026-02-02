@@ -10,6 +10,8 @@ import {
   AuthType,
   type Config,
   loadApiKey,
+  loadDeepSeekApiKey,
+  loadOpenAICompatApiKey,
   debugLogger,
 } from '@google/gemini-cli-core';
 import { getErrorMessage } from '@google/gemini-cli-core';
@@ -59,13 +61,15 @@ export const useAuthCommand = (
   );
 
   const reloadApiKey = useCallback(async () => {
-    const envKey = process.env['GEMINI_API_KEY'];
-    if (envKey !== undefined) {
-      setApiKeyDefaultValue(envKey);
-      return envKey;
-    }
+    const provider = (process.env['GEMINI_CLI_PROVIDER'] || '').toLowerCase();
+    const isDeepSeek = provider === 'deepseek';
+    const isOpenAICompat = provider === 'openai_compatible';
 
-    const storedKey = (await loadApiKey()) ?? '';
+    const storedKey = isDeepSeek
+      ? ((await loadDeepSeekApiKey()) ?? '')
+      : isOpenAICompat
+        ? ((await loadOpenAICompatApiKey()) ?? '')
+        : ((await loadApiKey()) ?? '');
     setApiKeyDefaultValue(storedKey);
     return storedKey;
   }, []);

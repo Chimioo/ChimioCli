@@ -18,6 +18,16 @@ import { handleError } from './utils/errors.js';
 import { runExitCleanup } from './utils/cleanup.js';
 
 function getAuthTypeFromEnv(): AuthType | undefined {
+  const provider = (process.env['GEMINI_CLI_PROVIDER'] || '').toLowerCase();
+  const shouldUseDeepSeek =
+    provider === 'deepseek' ||
+    (!provider && !!process.env['DEEPSEEK_API_KEY'] && !process.env['GEMINI_API_KEY']);
+
+  if (shouldUseDeepSeek) {
+    // Reuse an existing AuthType so we can pass through existing config.refreshAuth()
+    // flows without introducing a new AuthType.
+    return AuthType.USE_GEMINI;
+  }
   if (process.env['GOOGLE_GENAI_USE_GCA'] === 'true') {
     return AuthType.LOGIN_WITH_GOOGLE;
   }

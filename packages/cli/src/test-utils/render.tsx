@@ -211,6 +211,7 @@ const mockUIActions: UIActions = {
   handleWarning: vi.fn(),
   handleRestart: vi.fn(),
   handleNewAgentsSelect: vi.fn(),
+  setCustomDialog: vi.fn(),
 };
 
 export const renderWithProviders = (

@@ -1383,6 +1383,56 @@ const SETTINGS_SCHEMA = {
     },
   },
 
+  providers: {
+    type: 'object',
+    label: 'Providers',
+    category: 'Advanced',
+    requiresRestart: true,
+    default: {},
+    description: 'Provider-specific settings (e.g., OpenAI-compatible baseUrl/model).',
+    showInDialog: false,
+    properties: {
+      openai_compatible: {
+        type: 'object',
+        label: 'OpenAI-compatible',
+        category: 'Advanced',
+        requiresRestart: true,
+        default: {},
+        description: 'Settings for OpenAI-compatible providers.',
+        showInDialog: false,
+        properties: {
+          baseUrl: {
+            type: 'string',
+            label: 'Base URL',
+            category: 'Advanced',
+            requiresRestart: true,
+            default: 'https://api.openai.com/v1',
+            description: 'The base URL for OpenAI-compatible chat completions API.',
+            showInDialog: false,
+          },
+          defaultModel: {
+            type: 'string',
+            label: 'Default Model',
+            category: 'Advanced',
+            requiresRestart: true,
+            default: 'gpt-4o-mini',
+            description: 'Default model name for OpenAI-compatible provider.',
+            showInDialog: false,
+          },
+          temperature: {
+            type: 'number',
+            label: 'Temperature',
+            category: 'Advanced',
+            requiresRestart: false,
+            default: 0.2,
+            description: 'Sampling temperature for OpenAI-compatible provider.',
+            showInDialog: false,
+          },
+        },
+      },
+    },
+  },
+
   advanced: {
     type: 'object',
     label: 'Advanced',

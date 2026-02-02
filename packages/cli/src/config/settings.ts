@@ -472,6 +472,32 @@ export function loadEnvironment(settings: Settings): void {
       // Errors are ignored to match the behavior of `dotenv.config({ quiet: true })`.
     }
   }
+
+  // Provider runtime configuration (internal; not required to be set by the user via env)
+  // These values come from settings and can be overridden per-workspace.
+  // They are only set if not already present in the environment.
+  const openaiCompat = (settings as unknown as {
+    providers?: {
+      openai_compatible?: {
+        baseUrl?: string;
+        defaultModel?: string;
+        temperature?: number;
+      };
+    };
+  }).providers?.openai_compatible;
+
+  if (openaiCompat?.baseUrl && !process.env['OPENAI_COMPAT_BASE_URL']) {
+    process.env['OPENAI_COMPAT_BASE_URL'] = openaiCompat.baseUrl;
+  }
+  if (openaiCompat?.defaultModel && !process.env['OPENAI_COMPAT_MODEL']) {
+    process.env['OPENAI_COMPAT_MODEL'] = openaiCompat.defaultModel;
+  }
+  if (
+    typeof openaiCompat?.temperature === 'number' &&
+    !process.env['OPENAI_COMPAT_TEMPERATURE']
+  ) {
+    process.env['OPENAI_COMPAT_TEMPERATURE'] = String(openaiCompat.temperature);
+  }
 }
 
 /**

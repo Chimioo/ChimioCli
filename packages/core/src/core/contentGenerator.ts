@@ -15,7 +15,12 @@ import type {
 import { GoogleGenAI } from '@google/genai';
 import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
 import type { Config } from '../config/config.js';
-import { loadApiKey } from './apiKeyCredentialStorage.js';
+import {
+  loadApiKey,
+  loadDeepSeekApiKey,
+  loadOpenAICompatApiKey,
+} from './apiKeyCredentialStorage.js';
+import { DeepSeekContentGenerator } from './deepseekContentGenerator.js';
 
 import type { UserTierId } from '../code_assist/types.js';
 import { LoggingContentGenerator } from './loggingContentGenerator.js';
@@ -24,6 +29,21 @@ import { FakeContentGenerator } from './fakeContentGenerator.js';
 import { parseCustomHeaders } from '../utils/customHeaderUtils.js';
 import { RecordingContentGenerator } from './recordingContentGenerator.js';
 import { getVersion, resolveModel } from '../../index.js';
+
+function shouldUseDeepSeekProvider(): boolean {
+  const provider = (process.env['GEMINI_CLI_PROVIDER'] || '').toLowerCase();
+  if (provider === 'deepseek') {
+    return true;
+  }
+  if (provider === 'openai_compatible') {
+    return true;
+  }
+  if (provider) {
+    return false;
+  }
+  // Auto-detect when provider isn't set.
+  return !!process.env['DEEPSEEK_API_KEY'] && !process.env['GEMINI_API_KEY'];
+}
 
 /**
  * Interface abstracting the core functionalities for generating content and counting tokens.
@@ -121,6 +141,27 @@ export async function createContentGenerator(
       );
       return new LoggingContentGenerator(fakeGenerator, gcConfig);
     }
+
+    if (shouldUseDeepSeekProvider()) {
+      if (!process.env['DEEPSEEK_API_KEY']) {
+        const storedKey = await loadDeepSeekApiKey();
+        if (storedKey) {
+          process.env['DEEPSEEK_API_KEY'] = storedKey;
+        }
+      }
+      if (
+        (process.env['GEMINI_CLI_PROVIDER'] || '').toLowerCase() ===
+          'openai_compatible' &&
+        !process.env['OPENAI_COMPAT_API_KEY']
+      ) {
+        const storedKey = await loadOpenAICompatApiKey();
+        if (storedKey) {
+          process.env['OPENAI_COMPAT_API_KEY'] = storedKey;
+        }
+      }
+      return new LoggingContentGenerator(new DeepSeekContentGenerator(), gcConfig);
+    }
+
     const version = await getVersion();
     const model = resolveModel(
       gcConfig.getModel(),

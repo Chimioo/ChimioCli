@@ -9,6 +9,7 @@ import {
   GeminiEventType as ServerGeminiEventType,
   getErrorMessage,
   isNodeError,
+  isAuthenticationError,
   MessageSenderType,
   logUserPrompt,
   GitService,
@@ -1311,7 +1312,7 @@ export const useGeminiStream = (
               }
             } catch (error: unknown) {
               spanMetadata.error = error;
-              if (error instanceof UnauthorizedError) {
+              if (error instanceof UnauthorizedError || isAuthenticationError(error)) {
                 onAuthError('Session expired or is unauthorized.');
               } else if (
                 // Suppress ValidationRequiredError if it was marked as handled (e.g. user clicked change_auth or cancelled)

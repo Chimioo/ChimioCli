@@ -54,7 +54,6 @@ import {
   safeJsonStringifyBooleanValuesOnly,
 } from '../../utils/safeJsonStringify.js';
 import { FixedDeque } from 'mnemonist';
-import { GIT_COMMIT_INFO, CLI_VERSION } from '../../generated/git-commit.js';
 import {
   IDE_DEFINITIONS,
   detectIdeFromEnv,
@@ -62,6 +61,9 @@ import {
 } from '../../ide/detect-ide.js';
 import { debugLogger } from '../../utils/debugLogger.js';
 import { getErrorMessage } from '../../utils/errors.js';
+
+const CLI_VERSION = process.env['GEMINI_CLI_VERSION'] || 'dev';
+const GIT_COMMIT_INFO = process.env['GEMINI_CLI_GIT_COMMIT'] || 'unknown';
 
 export enum EventNames {
   START_SESSION = 'start_session',

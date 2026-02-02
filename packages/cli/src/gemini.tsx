@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { render } from 'ink';
+import prompts from 'prompts';
 import { AppContainer } from './ui/AppContainer.js';
 import { loadCliConfig, parseArguments } from './config/config.js';
 import * as cliConfig from './config/config.js';
@@ -394,6 +395,35 @@ export async function main() {
         partialConfig.isInteractive() &&
         settings.merged.security.auth.selectedType
       ) {
+        const provider = (process.env['GEMINI_CLI_PROVIDER'] || '').toLowerCase();
+        const hasGeminiKey = !!process.env['GEMINI_API_KEY'];
+        const hasDeepSeekKey = !!process.env['DEEPSEEK_API_KEY'];
+        if (!provider && hasGeminiKey && hasDeepSeekKey) {
+          const response = await prompts(
+            {
+              type: 'select',
+              name: 'provider',
+              message: 'Choose an LLM provider for this session',
+              choices: [
+                { title: 'Gemini', value: 'gemini' },
+                { title: 'DeepSeek', value: 'deepseek' },
+              ],
+            },
+            {
+              onCancel: async () => {
+                await runExitCleanup();
+                process.exit(ExitCodes.SUCCESS);
+              },
+            },
+          );
+
+          if (response.provider === 'deepseek') {
+            process.env['GEMINI_CLI_PROVIDER'] = 'deepseek';
+          } else if (response.provider === 'gemini') {
+            process.env['GEMINI_CLI_PROVIDER'] = 'gemini';
+          }
+        }
+
         const err = validateAuthMethod(
           settings.merged.security.auth.selectedType,
         );
